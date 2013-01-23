@@ -1,26 +1,31 @@
 #include <bindings.dsl.h>
+#include "wrapper.h"
 
-#include "url_parse.h"
 
 module Bindings.Url (
-  Parsed
+  c'parseUrl,
+  ParsedPtr,
+  Result(..)
 ) where 
 
+import Foreign.C.String
 import Foreign.C.Types
+import Foreign.Ptr
 
-#starttype Component
-#field begin, CInt
-#field end, CInt
-#stoptype
 
-#starttype Parsed
-#field scheme, Component
-#field username, Component
-#field password, Component
-#field host, Component
-#field port, Component
-#field path, Component
-#field query, Component
-#field ref, Component
-#field inner_parsed_, (Ptr Parsed)
-#stoptype
+data Parsed
+
+type ParsedPtr = Ptr Parsed
+
+newtype UrlType = UrlType {t :: CInt}
+
+#{enum UrlType, UrlType,
+  standard = STANDARD
+}
+
+#starttype Result
+#field urlType , UrlType
+#field urlParsed , ParsedPtr
+#endtype
+
+#ccall parseUrl , CString -> CSize -> IO Result

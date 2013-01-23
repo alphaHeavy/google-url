@@ -19,16 +19,17 @@ extra-source-files:
 library
   default-language:
     Haskell2010
-  CC-Options: -x cpp
+--  CC-Options: -x cpp
   hs-source-dirs:
     src
   c-sources:
-    cbits/wrapper.c
+    cbits/wrapper.cpp
   Include-Dirs:      
     cbits
     cbits/google-url/
     cbits/google-url/base
     cbits/google-url/src
+    /usr/include
   exposed-modules:
     Data.Url
   other-modules:
@@ -37,9 +38,11 @@ library
     base              >= 3      && < 5,
     bindings-DSL >= 1.0.12,
     bytestring,
-    ghc-prim
+    ghc-prim,
+    mtl,
+    text
   ghc-options:
-    -Wall -Werror
+    -Wall
 
 test-suite google-url-test
   default-language:

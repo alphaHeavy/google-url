@@ -34,7 +34,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "googleurl/src/url_common.h"
+#include "url_common.h"
 
 namespace url_parse {
 

@@ -1,14 +1,22 @@
 #ifndef _WRAPPER_H_
 #define _WRAPPER_H_
 
-#include "google-url/src/url_parse.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
- void parseUrl(const char *url,const int url_len, Parsed* result);
+  enum {
+    STANDARD,
+    HOST_RELATIVE
+  } UrlType;
+
+  typedef struct Result {
+    enum UrlType urlType;
+    Parsed* urlParsed;
+  } Result;
+
+  Result parseUrl(const char *url,const int url_len);
 #ifdef __cplusplus
-    throw ();
+    //throw ();
 #else
     ;
 #endif
@@ -17,4 +25,4 @@ extern "C" {
 }
 #endif
 
-#endif // _XPATHPARSERS_PARSE_H_
+#endif // _WRAPPER_H_
