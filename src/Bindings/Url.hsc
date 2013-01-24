@@ -3,6 +3,7 @@
 
 module Bindings.Url (
   c'parseUrl,
+  ParsedPrime,
   ParsedPtr,
   C'Result(..),
   UrlType(..)
