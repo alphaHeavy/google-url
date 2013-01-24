@@ -10,14 +10,14 @@ void parseUrl(const char *url, const int url_len, Result *res)
     return;
   char* schemeString = (char*)malloc(scheme.len);
   strncpy(const_cast<char*>(url)+scheme.begin,schemeString, scheme.len);
-  Parsed *result = new Parsed();
+  url_parse::Parsed *result = new url_parse::Parsed();
 
-  if(schemeString == "http")
-  {  
+  if (strcmp(schemeString, "http"))
+  {
     free(schemeString);
     res->urlType = STANDARD;
     ParseStandardURL(url,url_len,result);
-    res->urlParsed = result;
+    res->urlParsed = reinterpret_cast< ::Parsed*>(result);
   }
   else
   {
