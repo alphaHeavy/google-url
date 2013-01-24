@@ -4,14 +4,16 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-  enum {
+  struct Result;
+
+  enum UrlType {
     STANDARD,
     HOST_RELATIVE
-  } UrlType;
+  };
 
   typedef struct Result {
     enum UrlType urlType;
-    Parsed* urlParsed;
+    struct Parsed* urlParsed;
   } Result;
 
   Result parseUrl(const char *url,const int url_len);

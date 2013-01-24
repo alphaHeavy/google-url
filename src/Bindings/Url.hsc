@@ -26,6 +26,6 @@ newtype UrlType = UrlType {t :: CInt}
 #starttype Result
 #field urlType , UrlType
 #field urlParsed , ParsedPtr
-#endtype
+#stoptype
 
 #ccall parseUrl , CString -> CSize -> IO Result
