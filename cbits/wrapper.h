@@ -16,7 +16,7 @@ extern "C" {
     struct Parsed* urlParsed;
   } Result;
 
-  Result parseUrl(const char *url,const int url_len);
+  void parseUrl(const char *url,const int url_len, Result *result);
 #ifdef __cplusplus
     //throw ();
 #else

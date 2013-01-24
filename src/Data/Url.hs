@@ -14,6 +14,8 @@ import Foreign.C.String (withCString)
 import Foreign.C.Types (CSize(..))
 import Foreign.ForeignPtr
 import Foreign.Marshal.Alloc
+import Foreign.Ptr
+import Foreign.Storable
 import System.IO.Unsafe
 
 data Url where
@@ -24,6 +26,8 @@ parseUrl str =
   unsafePerformIO $ 
     mask_ $
       withCString (T.unpack str) $ \ cstr -> do
-        result <- c'parseUrl cstr (CSize $ fromIntegral $ T.length str)
-        foreignPtr <- newForeignPtr finalizerFree $ urlParsed result
-        
+        struct <- malloc
+        c'parseUrl cstr (CSize $ fromIntegral $ T.length str) struct
+        val <- peek struct
+        foreignPtr <- newForeignPtr finalizerFree $ c'Result'urlParsed val
+        undefined

@@ -1,23 +1,27 @@
 #include <bindings.dsl.h>
 #include "wrapper.h"
 
-
 module Bindings.Url (
   c'parseUrl,
   ParsedPtr,
-  Result(..)
+  C'Result(..),
+  UrlType(..)
 ) where 
 
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign.Ptr
+import Foreign.Storable
 
+data ParsedPrime
 
-data Parsed
+type ParsedPtr = Ptr ParsedPrime
 
-type ParsedPtr = Ptr Parsed
+newtype UrlType = UrlType {t :: CInt} deriving (Eq,Show)
 
-newtype UrlType = UrlType {t :: CInt}
+instance Storable UrlType where
+  sizeOf _    = 4
+  alignment _ = 4
 
 #{enum UrlType, UrlType,
   standard = STANDARD
@@ -26,6 +30,6 @@ newtype UrlType = UrlType {t :: CInt}
 #starttype Result
 #field urlType , UrlType
 #field urlParsed , ParsedPtr
-#stoptype
+#stoptype  
 
-#ccall parseUrl , CString -> CSize -> IO Result
+#ccall parseUrl , CString -> CSize -> Ptr C'Result -> IO ()

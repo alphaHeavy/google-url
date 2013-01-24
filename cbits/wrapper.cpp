@@ -3,7 +3,7 @@
 
 using namespace url_parse;
 
-Result parseUrl(const char *url, const int url_len)
+void parseUrl(const char *url, const int url_len, Result *res)
 {
   Component scheme;
   if(!ExtractScheme(url, url_len, &scheme))
@@ -15,11 +15,9 @@ Result parseUrl(const char *url, const int url_len)
   if(schemeString == "http")
   {  
     free(schemeString);
-    Result res;
-    res.urlType = STANDARD;
+    res->urlType = STANDARD;
     ParseStandardURL(url,url_len,result);
-    res.urlParsed = result;
-    return res;
+    res->urlParsed = result;
   }
   else
   {
