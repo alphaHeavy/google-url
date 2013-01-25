@@ -24,12 +24,30 @@ library
     src
   c-sources:
     cbits/wrapper.cpp
+    cbits/googleurl/src/GURL.cc
+    cbits/googleurl/src/url_canon_etc.cc
+    cbits/googleurl/src/url_canon_filesystemurl.cc
+    cbits/googleurl/src/url_canon_fileurl.cc
+    cbits/googleurl/src/url_canon_host.cc
+    cbits/googleurl/src/url_canon_icu.cc
+    cbits/googleurl/src/url_canon_internal.cc
+    cbits/googleurl/src/url_canon_ip.cc
+    cbits/googleurl/src/url_canon_mailtourl.cc
+    cbits/googleurl/src/url_canon_path.cc
+    cbits/googleurl/src/url_canon_pathurl.cc
+    cbits/googleurl/src/url_canon_query.cc
+    cbits/googleurl/src/url_canon_relative.cc
+    cbits/googleurl/src/url_canon_stdurl.cc
+    cbits/googleurl/src/url_parse.cc
+    cbits/googleurl/src/url_util.cc
   Include-Dirs:      
     cbits
     cbits/googleurl/
     cbits/googleurl/base
     cbits/googleurl/src
     /usr/include
+  extra-libraries:
+    stdc++
   exposed-modules:
     Data.Url
   other-modules:

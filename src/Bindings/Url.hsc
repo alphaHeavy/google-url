@@ -2,22 +2,21 @@
 #include "wrapper.h"
 
 module Bindings.Url (
+  c'isStandard,
   c'parseUrl,
-  ParsedPrime,
-  ParsedPtr
+  c'toString,
+  Gurl,
+  GurlPtr
 ) where 
 
 import Foreign.C.String
 import Foreign.C.Types
 import Foreign.Ptr
-import Foreign.Storable
 
-data ParsedPrime
+data Gurl
 
-type ParsedPtr = Ptr ParsedPrime
+type GurlPtr = Ptr Gurl
 
-{-instance Storable ParsedPtr where
-  sizeOf _    = 
-  alignment _ = 4-}
-
-#ccall parseUrl , CString -> CSize -> Ptr ParsedPtr -> IO ()
+#ccall parseUrl , CString -> CSize -> Ptr GurlPtr -> IO ()
+#ccall isStandard , GurlPtr -> IO Int
+#ccall toString , GurlPtr -> IO CString

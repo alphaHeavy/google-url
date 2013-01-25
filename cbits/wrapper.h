@@ -4,7 +4,13 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-  void parseUrl(const char *url,const int url_len, void *result);
+  void parseUrl(const char *url,const int url_len, void **result);
+
+  int isStandard(const void *gurl);
+
+  void getScheme(const void *gurl, char**);
+
+  char* toString(const void *gurl);
 #ifdef __cplusplus
     //throw ();
 #else

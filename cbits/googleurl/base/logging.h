@@ -7,10 +7,11 @@
 #include <string>
 #include <cstring>
 #include <strstream>
-#include <tchar.h>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+
+#define TCHAR char
 
 // Optional message capabilities
 // -----------------------------
