@@ -26,9 +26,9 @@ library
     cbits/wrapper.cpp
   Include-Dirs:      
     cbits
-    cbits/google-url/
-    cbits/google-url/base
-    cbits/google-url/src
+    cbits/googleurl/
+    cbits/googleurl/base
+    cbits/googleurl/src
     /usr/include
   exposed-modules:
     Data.Url

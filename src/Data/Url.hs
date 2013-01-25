@@ -19,16 +19,15 @@ import Foreign.Storable
 import System.IO.Unsafe
 
 data Url where
-  FullyQualifiedUrl :: CString -> ForeignPtr ParsedPrime -> Url
+  FullyQualifiedUrl :: ForeignPtr ParsedPrime -> Url
 
 parseUrl :: Text -> Maybe Url
 parseUrl str = 
   unsafePerformIO $ 
     mask_ $ do
       cstr <- newCString $ T.unpack str
-      struct <- malloc
-      c'parseUrl cstr (CSize $ fromIntegral $ T.length str) struct
-      val <- peek struct
-      foreignPtr <- newForeignPtr finalizerFree $ c'Result'urlParsed val
-      case c'Result'urlType of
-        standard -> return $ Just $ FullyQualifiedUrl cstr foreignPtr
+      alloca $ \ ptr -> do
+        c'parseUrl cstr (CSize $ fromIntegral $ T.length str) ptr
+        val <- peek ptr
+        foreignPtr <- newForeignPtr finalizerFree val
+        return $ Just $ FullyQualifiedUrl foreignPtr
