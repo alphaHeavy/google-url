@@ -475,9 +475,9 @@ void CloseLogFile();
 // is designed to allow you to emit non-ASCII Unicode strings to the log file,
 // which is normally ASCII. It is relatively slow, so try not to use it for
 // common cases. Non-ASCII characters will be converted to UTF-8 by these operators.
-std::ostream& operator<<(std::ostream& out, const wchar_t* wstr);
-inline std::ostream& operator<<(std::ostream& out, const std::wstring& wstr) {
-  return out << wstr.c_str();
-}
+//std::ostream& operator<<(std::ostream& out, const wchar_t* wstr);
+//inline std::ostream& operator<<(std::ostream& out, const std::wstring& wstr) {
+//  return out << wstr.c_str();
+//}
 
 #endif  // BASE_LOGGING_H__

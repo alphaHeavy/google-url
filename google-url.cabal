@@ -19,11 +19,12 @@ extra-source-files:
 library
   default-language:
     Haskell2010
---  CC-Options: -x cpp
   hs-source-dirs:
     src
   c-sources:
     cbits/wrapper.cpp
+    cbits/googleurl/base/logging.cc
+    cbits/googleurl/base/string16.cc
     cbits/googleurl/src/GURL.cc
     cbits/googleurl/src/url_canon_etc.cc
     cbits/googleurl/src/url_canon_filesystemurl.cc
@@ -39,6 +40,7 @@ library
     cbits/googleurl/src/url_canon_relative.cc
     cbits/googleurl/src/url_canon_stdurl.cc
     cbits/googleurl/src/url_parse.cc
+    cbits/googleurl/src/url_parse_file.cc
     cbits/googleurl/src/url_util.cc
   Include-Dirs:      
     cbits
@@ -48,8 +50,11 @@ library
     /usr/include
   extra-libraries:
     stdc++
+    icuuc
   exposed-modules:
     Data.Url
+    Data.Url.Internal
+    Data.Url.Types
   other-modules:
     Bindings.Url
   build-depends:

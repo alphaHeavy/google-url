@@ -30,8 +30,7 @@
 #include <ctime>
 #include <iomanip>
 #include <cstring>
-#include <windows.h>
-#include <tchar.h>
+//#include <tchar.h>
 #include <algorithm>
 #include "base/logging.h"
 
@@ -50,10 +49,10 @@ char* log_filter_prefix = NULL;
 // which log file to use? This is initialized by InitLogging or
 // will be lazily initialized to the default value when it is
 // first needed.
-TCHAR log_file_name[MAX_PATH] = { 0 };
+//TCHAR log_file_name[MAX_PATH] = { 0 };
 
 // this file is lazily opened and the handle may be NULL
-HANDLE log_file = NULL;
+//HANDLE log_file = NULL;
 
 // what should be prepended to each message?
 bool log_process_id = false;
@@ -69,17 +68,17 @@ LogAssertHandlerFunction log_assert_handler = NULL;
 // avoid problems with multiple threads writing to the log file at the same
 // time.
 bool initialized_critical_section = false;
-CRITICAL_SECTION log_critical_section;
+//CRITICAL_SECTION log_critical_section;
 
 // When we don't use a critical section, we are using a global mutex. We
 // need to do this because LockFileEx is not thread safe
-HANDLE log_mutex = NULL;
+//HANDLE log_mutex = NULL;
 
 // Called by logging functions to ensure that debug_file is initialized
 // and can be used for writing. Returns false if the file could not be
 // initialized. debug_file will be NULL in this case.
 bool InitializeLogFileHandle() {
-  if (log_file)
+/*  if (log_file)
     return true;
 
   if (!log_file_name[0]) {
@@ -105,24 +104,24 @@ bool InitializeLogFileHandle() {
       return false;
     }
   }
-  SetFilePointer(log_file, 0, 0, FILE_END);
+  SetFilePointer(log_file, 0, 0, FILE_END);*/
   return true;
 }
 
 void InitLogMutex() {
-  if (!log_mutex) {
+ /* if (!log_mutex) {
     // \ is not a legal character in mutex names so we replace \ with /
     std::wstring safe_name(log_file_name);
     std::replace(safe_name.begin(), safe_name.end(), '\\', '/');
     std::wstring t(L"Global\\");
     t.append(safe_name);
     log_mutex = ::CreateMutex(NULL, FALSE, t.c_str());
-  }
+  }*/
 }
 
 void InitLogging(const TCHAR* new_log_file, LoggingDestination logging_dest,
                  LogLockingState lock_log, OldFileDeletionState delete_old) {
-  if (log_file) {
+/*  if (log_file) {
     // calling InitLogging twice or after some log call has already opened the
     // default log file will re-initialize to the new options
     CloseHandle(log_file);
@@ -221,7 +220,7 @@ void DisplayDebugMessage(const std::string& str) {
   } else {
     // debug process broken, let's just do a message box
     MessageBoxW(NULL, cmdline.get(), L"Fatal error", MB_OK | MB_ICONHAND);
-  }
+  }*/
 }
 
 LogMessage::LogMessage(const char* file, int line, LogSeverity severity,
@@ -248,7 +247,7 @@ LogMessage::LogMessage(const char* file, int line, LogSeverity severity)
 
 // writes the common header info to the stream
 void LogMessage::Init(const char* file, int line) {
-  // log only the filename
+/*  // log only the filename
   const char* last_slash = strrchr(file, '\\');
   if (last_slash)
     file = last_slash + 1;
@@ -275,11 +274,11 @@ void LogMessage::Init(const char* file, int line) {
     stream_ << GetTickCount() << ':';
   stream_ << log_severity_names[severity_] << ":" << file << "(" << line << ")] ";
 
-  message_start_ = stream_.pcount();
+  message_start_ = stream_.pcount();*/
 }
 
 LogMessage::~LogMessage() {
-  if (severity_ < min_log_level)
+/*  if (severity_ < min_log_level)
     return;
 
   std::string str_newline(stream_.str(), stream_.pcount());
@@ -350,20 +349,20 @@ LogMessage::~LogMessage() {
 cleanup:
   // Calling stream_.str() freezes the stream buffer.  A frozen buffer will
   // not be freed during strstreambuf destruction.
-  stream_.freeze(false);
+  stream_.freeze(false);*/
 }
 
 void CloseLogFile() {
-  if (!log_file)
+/*  if (!log_file)
     return;
 
   CloseHandle(log_file);
-  log_file = NULL;
+  log_file = NULL;*/
 }
 
 } // namespace logging
 
-std::ostream& operator<<(std::ostream& out, const wchar_t* wstr) {
+/*std::ostream& operator<<(std::ostream& out, const wchar_t* wstr) {
   if (!wstr || !wstr[0])
     return out;
 
@@ -377,4 +376,4 @@ std::ostream& operator<<(std::ostream& out, const wchar_t* wstr) {
   scoped_array<char> buf(new char[charcount]);
   WideCharToMultiByte(CP_UTF8, 0, wstr, -1, buf.get(), charcount, NULL, NULL);
   return out << buf.get();
-}
+}*/

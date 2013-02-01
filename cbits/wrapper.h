@@ -8,9 +8,48 @@ extern "C" {
 
   int isStandard(const void *gurl);
 
-  void getScheme(const void *gurl, char**);
+  char* getScheme(const void *gurl);
+  char* getHostname(const void *gurl);
+  char* getUsername(const void *gurl);
+  char* getPassword(const void *gurl);
+  int   getPort(const void *gurl);
+  int   getEffectivePort(const void *gurl);
+  char* getPath(const void *gurl);
+  char* getQuery(const void *gurl);
+  char* getFragment(const void *gurl);
+
+  int hasScheme(const void *gurl);
+  int hasUsername(const void *gurl);
+  int hasPassword(const void *gurl);
+  int hasHostname(const void *gurl);
+  int hasPort(const void *gurl);
+  int hasPath(const void *gurl);
+  int hasQuery(const void *gurl);
+  int hasFragment(const void *gurl);
+
+  char* getFilename(const void *gurl);
+  char* getPathForRequest(const void *gurl);
+  char* getHostNoBrackets(const void *gurl);
+  int domainIs (const char *domain, const void *gurl);
+
+  void swap(void *gurl, const void *other);
+
+  void* getWithEmptyPath(const void *gurl);
+
+  void* getOrigin(const void *gurl);  
+
+  int schemeIs(const char *scheme, const void *gurl);
+  int schemeIsFile(const void *gurl);
+  int schemeIsFileSystem(const void *gurl);
+  int schemeIsSecure(const void *gurl);
+
+  int hostIsIPAddress(const void *gurl);
+
+  void* resolve(const char* relative, void *gurl);
 
   char* toString(const void *gurl);
+
+  void freeUrl(void *gurl);
 #ifdef __cplusplus
     //throw ();
 #else

@@ -35,6 +35,8 @@
 #include "base/logging.h"
 #include "googleurl/src/url_canon_internal.h"
 
+#define uint64 unsigned long
+
 namespace url_canon {
 
 namespace {
