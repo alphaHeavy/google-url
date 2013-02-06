@@ -7,6 +7,7 @@
 module Data.Url (
   isStandard,
   parseUrl,
+  parseFullyQualifiedUrl,
   resolveRelativeUrl,
   toText,
   HasHostname(..),
@@ -15,7 +16,8 @@ module Data.Url (
   HasQuery(..),
   HasFragment(..),
   HasScheme(..),
-  Url(..)) where
+  Url(..),
+  module Data.Url.Types) where
 
 import Control.Exception (mask_)
 import Control.Monad.Trans
@@ -32,17 +34,20 @@ import Foreign.Storable
 import System.IO.Unsafe
 
 
-instance HasScheme (Url 'Full) where
+instance HasScheme Url where
   hasScheme (FullyQualifiedUrl _) = True
   getScheme (FullyQualifiedUrl gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getScheme val
+  setScheme (FullyQualifiedUrl gurl) scheme = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> do
+    result <- I.setScheme val scheme
+    foreignPtr <- newForeignPtr I.p'freeUrl result
+    return $ FullyQualifiedUrl foreignPtr
 
-instance HasHostname (Url 'Full) where
+
+instance HasHostname Url where
   getHostname (FullyQualifiedUrl gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getHostname val
   hasHostname (FullyQualifiedUrl _) = True
 
---data UrlFoo = FullyQualified (Url 'Good) | Canonical (CanonicalUrl 'Good)
-
-parseUrl :: Text -> ParsedUrl --(Url a)
+parseUrl :: Text -> Url
 parseUrl str = 
   unsafePerformIO $ 
     mask_ $ do
@@ -50,14 +55,23 @@ parseUrl str =
       foreignPtr <- newForeignPtr I.p'freeUrl parsed
       valid <- I.isValid parsed
       case valid of
-        False -> return $ ParsedInvalidUrl $ InvalidUrl foreignPtr
+        False -> return $ InvalidUrl foreignPtr
         True -> do
           standard <- I.isStandard  parsed
           case standard of
-            False -> return $ ParsedRelativeUrl $ RelativeUrl foreignPtr
-            True -> return $ ParsedFullyQualifiedUrl $ FullyQualifiedUrl foreignPtr
+            False -> return $ RelativeUrl foreignPtr
+            True -> return $ FullyQualifiedUrl foreignPtr
 
-resolveRelativeUrl :: Url 'Full -> Url 'Relative -> (Url 'Full)
+{- This function is unsafe. It assumes that the string is fully qualified url. Use with caution. -}
+parseFullyQualifiedUrl :: Text -> Url
+parseFullyQualifiedUrl str =
+  unsafePerformIO $ 
+    mask_ $ do
+      parsed <- I.parseUrl str
+      foreignPtr <- newForeignPtr I.p'freeUrl parsed
+      return $ FullyQualifiedUrl foreignPtr
+
+resolveRelativeUrl :: Url -> Url -> Url
 resolveRelativeUrl (FullyQualifiedUrl gurl) (RelativeUrl relativeUrl) =
   unsafePerformIO $ mask_ $ 
     withForeignPtr gurl $ \ fullUrl ->
@@ -66,14 +80,14 @@ resolveRelativeUrl (FullyQualifiedUrl gurl) (RelativeUrl relativeUrl) =
          foreignPtr <- newForeignPtr I.p'freeUrl result
          return $ FullyQualifiedUrl foreignPtr
 
-toText :: ValidUrl a ~ 'True => Url a -> Text
+toText :: Url -> Text
 toText url = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
   where
     gurl = case url of
              (FullyQualifiedUrl ptr) -> ptr
              (RelativeUrl ptr) -> ptr
 
-isStandard :: Url a -> Bool
+isStandard :: Url -> Bool
 isStandard url = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
   where
     gurl = case url of

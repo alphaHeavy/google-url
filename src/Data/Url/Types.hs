@@ -14,34 +14,18 @@ module Data.Url.Types (
   HasFragment(..),
   HasScheme(..),
   Hostname(..),
-  ParsedUrl(..),
   Scheme (..),
-  Url(..),
-  UrlKind(..),
-  ValidUrl) where
+  Url(..)) where
 
 import Bindings.Url
 import Data.Text (Text)
 import Foreign.ForeignPtr
 
-data UrlKind = Full | Relative | Invalid | Other
-
-type family ValidUrl (x :: UrlKind) :: Bool
-
-type instance ValidUrl x = ValidUrlOf x ['Full,'Relative]
-
-type family ValidUrlOf (x :: UrlKind) (xs :: [UrlKind]) :: Bool
-
-type instance ValidUrlOf x xs = 'True
-
-data Url (a :: UrlKind) where
-  FullyQualifiedUrl :: ForeignPtr Gurl -> Url 'Full
-  RelativeUrl :: ForeignPtr Gurl -> Url 'Relative
-  InvalidUrl :: ForeignPtr Gurl -> Url 'Invalid
-  FileUrl :: ForeignPtr Gurl -> Url 'Other
-  CanonicalUrl :: ForeignPtr Gurl -> Url 'Full
-
-data ParsedUrl = ParsedFullyQualifiedUrl (Url 'Full) | ParsedRelativeUrl (Url 'Relative) | ParsedInvalidUrl (Url 'Invalid)
+data Url where
+  FullyQualifiedUrl :: ForeignPtr Gurl -> Url
+  RelativeUrl :: ForeignPtr Gurl -> Url
+  InvalidUrl :: ForeignPtr Gurl -> Url
+  FileUrl :: ForeignPtr Gurl -> Url
 
 --unsafeParseCanonical :: ByteString -> Url 'Full
 
@@ -67,6 +51,7 @@ data Fragment = Fragment Text deriving (Eq,Ord,Show)
 class HasScheme a where
   getScheme :: a -> Scheme
   hasScheme :: a -> Bool
+  setScheme :: a -> Scheme -> a
 
 class HasHostname a where
   getHostname :: a -> Hostname
@@ -74,6 +59,7 @@ class HasHostname a where
 
 class HasPort a where
   getPort :: a -> Port
+  hasPort :: a -> Bool
 
 class HasPath a where
   getPath :: a -> Path

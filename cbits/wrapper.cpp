@@ -1,8 +1,10 @@
 #include "wrapper.h"
 #include "gurl.h"
+#include "url_canon.h"
 #include <string>
 
 using namespace std;
+using namespace url_canon;
 
 void parseUrl(const char *url, const int url_len, void **res)
 {
@@ -211,11 +213,20 @@ void* resolve(const void* relative, const void *gurl)
   GURL *ptr = (GURL *)relative;
   GURL *url = (GURL *)gurl;
   GURL newUrl = url->Resolve(ptr->spec());
-  return new GURL(newUrl);
+  return (void  *)new GURL(newUrl);
 }
 
 int isValid(const void *gurl)
 {
   GURL *url = (GURL *)gurl;
   return url->is_valid();
+}
+
+void* setScheme (const void *gurl, const char *scheme)
+{
+  GURL *ptr = (GURL *)gurl;
+  Replacements<char> r;
+  r.SetScheme(scheme,ptr->parsed_for_possibly_invalid_spec().scheme);
+  GURL result = ptr->ReplaceComponents(r);
+  return (void *) new GURL(result);
 }

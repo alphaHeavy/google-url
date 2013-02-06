@@ -18,6 +18,8 @@ extern "C" {
   char* getQuery(const void *gurl);
   char* getFragment(const void *gurl);
 
+  void* setScheme(const void *gurl, const char *scheme);
+
   int hasScheme(const void *gurl);
   int hasUsername(const void *gurl);
   int hasPassword(const void *gurl);
@@ -45,7 +47,8 @@ extern "C" {
 
   int hostIsIPAddress(const void *gurl);
 
-  void* resolve(const char* relative, void *gurl);
+  void* resolve(const void* relative, const void *gurl);
+  int isValid(const void *gurl);
 
   char* toString(const void *gurl);
 

@@ -3,6 +3,7 @@
 module Data.Url.Internal (
   Data.Url.Internal.getScheme,
   Data.Url.Internal.getHostname,
+  Data.Url.Internal.setScheme,
   p'freeUrl,
   isStandard,
   isValid,
@@ -44,13 +45,16 @@ getScheme gurl = do
   str' <- peekCString str
   return $ makeScheme $ T.pack str'
 
+setScheme :: GurlPtr -> Scheme -> IO GurlPtr
+setScheme gurl scheme = do
+  cstr <- newCString $ show scheme 
+  c'setScheme gurl cstr
+
 getHostname :: GurlPtr -> IO Hostname
 getHostname gurl = do
   str <- c'getHostname gurl
   str' <- peekCString str
   return $ Hostname $ T.pack str'
-
-
 
 isStandard :: GurlPtr -> IO Bool
 isStandard gurl = do

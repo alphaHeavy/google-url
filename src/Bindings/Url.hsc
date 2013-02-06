@@ -27,6 +27,7 @@ module Bindings.Url (
   c'isValid,
   c'parseUrl,
   c'resolve,
+  c'setScheme,
   c'swap,
   c'toString,
   Gurl,
@@ -78,3 +79,5 @@ type GurlPtr = Ptr Gurl
 #ccall hostIsIPAddress , GurlPtr -> IO CInt
 #ccall resolve , GurlPtr -> GurlPtr -> IO GurlPtr
 #ccall isValid , GurlPtr -> IO CInt
+
+#ccall setScheme , GurlPtr -> CString -> IO GurlPtr
