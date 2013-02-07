@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Data.Url.Internal (
+  Data.Url.Internal.equals,
   Data.Url.Internal.getScheme,
   Data.Url.Internal.getHostname,
   Data.Url.Internal.setScheme,
@@ -84,3 +85,8 @@ toText gurl = do
   str <- c'toString gurl
   str' <- peekCString str
   return $ T.pack str'
+
+equals :: GurlPtr -> GurlPtr -> IO Bool
+equals ptr1 ptr2 = do
+  result <- c'equals ptr1 ptr2
+  return $ toBool result

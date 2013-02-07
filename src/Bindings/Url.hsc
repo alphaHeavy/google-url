@@ -2,6 +2,7 @@
 #include "wrapper.h"
 
 module Bindings.Url (
+  c'equals,
   c'freeUrl,
   c'getEffectivePort,
   c'getFilename,
@@ -79,5 +80,6 @@ type GurlPtr = Ptr Gurl
 #ccall hostIsIPAddress , GurlPtr -> IO CInt
 #ccall resolve , GurlPtr -> GurlPtr -> IO GurlPtr
 #ccall isValid , GurlPtr -> IO CInt
+#ccall equals , GurlPtr -> GurlPtr -> IO CInt
 
 #ccall setScheme , GurlPtr -> CString -> IO GurlPtr

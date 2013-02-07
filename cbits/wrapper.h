@@ -49,6 +49,7 @@ extern "C" {
 
   void* resolve(const void* relative, const void *gurl);
   int isValid(const void *gurl);
+  int equals(const void *gurl1, const void *gurl2);
 
   char* toString(const void *gurl);
 

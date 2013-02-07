@@ -230,3 +230,10 @@ void* setScheme (const void *gurl, const char *scheme)
   GURL result = ptr->ReplaceComponents(r);
   return (void *) new GURL(result);
 }
+
+int equals(const void *gurl1, const void *gurl2)
+{
+  GURL *ptr1 = (GURL *)gurl1;
+  GURL *ptr2 = (GURL *)gurl2;
+  return *ptr1 == *ptr2;
+}
