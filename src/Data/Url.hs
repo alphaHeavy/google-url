@@ -54,6 +54,9 @@ instance Eq Url where
   (FileUrl url1) == (FileUrl url2) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
   _ == _ = False
 
+instance Show Url where
+  show = T.unpack . toText
+
 parseUrl :: Text -> Url
 parseUrl str = 
   unsafePerformIO $ 
