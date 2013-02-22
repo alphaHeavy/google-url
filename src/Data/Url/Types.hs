@@ -101,3 +101,5 @@ class HasQuery a where
 class HasFragment a where
   getFragment :: a -> Maybe Fragment
 
+instance NFData Hostname where
+  rnf (Hostname x) = rnf x `seq` ()
