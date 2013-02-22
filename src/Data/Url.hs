@@ -56,6 +56,10 @@ instance HasHostname Url where
   getHostname (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getHostname val
   hasHostname (FullyQualifiedUrl _) = True
 
+instance HasHostname FullyQualifiedUrl where
+  getHostname (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getHostname val
+  hasHostname (FQU _) = True
+
 instance Eq Url where
   (FullyQualifiedUrl (FQU url1)) == (FullyQualifiedUrl (FQU url2)) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
   (RelativeUrl (RU url1)) == (RelativeUrl (RU url2)) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
