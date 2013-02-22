@@ -61,6 +61,7 @@ library
     base              >= 3      && < 5,
     bindings-DSL >= 1.0.12,
     bytestring,
+    deepseq,
     ghc-prim,
     mtl,
     text

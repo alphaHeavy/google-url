@@ -10,12 +10,16 @@ module Data.Url (
   parseFullyQualifiedUrl,
   resolveRelativeUrl,
   toText,
+  FileUrl(..),
+  FullyQualifiedUrl(..),
   HasHostname(..),
   HasPath(..),
   HasPort(..),
   HasQuery(..),
   HasFragment(..),
   HasScheme(..),
+  InvalidUrl(..),
+  RelativeUrl(..),
   Url(..),
   module Data.Url.Types) where
 
@@ -56,6 +60,18 @@ instance Eq Url where
 
 instance Show Url where
   show = T.unpack . toText
+
+instance Show FullyQualifiedUrl where
+  show (FQU gurl) = T.unpack $ unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
+
+instance Show RelativeUrl where
+  show (RU gurl) = T.unpack $ unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
+
+instance Show InvalidUrl where
+  show (IU gurl) = T.unpack $ unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
+
+instance Show FileUrl where
+  show (FU gurl) = T.unpack $ unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
 
 parseUrl :: Text -> Url
 parseUrl str = 

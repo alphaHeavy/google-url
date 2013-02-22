@@ -22,6 +22,7 @@ module Data.Url.Types (
   Url(..)) where
 
 import Bindings.Url
+import Control.DeepSeq
 import Data.Text (Text)
 import Foreign.ForeignPtr
 
@@ -31,6 +32,19 @@ data InvalidUrl = IU (ForeignPtr Gurl)
 data FileUrl = FU (ForeignPtr Gurl)
 
 data Url = FullyQualifiedUrl FullyQualifiedUrl | RelativeUrl RelativeUrl | InvalidUrl InvalidUrl | FileUrl FileUrl
+
+instance NFData FullyQualifiedUrl where
+  rnf _ = ()
+
+instance NFData RelativeUrl where
+  rnf _ = ()
+
+instance NFData InvalidUrl where
+  rnf _ = ()
+
+instance NFData FileUrl where
+  rnf _ = ()
+
 
 {-
 data Url where
