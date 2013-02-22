@@ -30,28 +30,28 @@ import Foreign.C.String
 import Foreign.C.Types
 import Foreign.ForeignPtr
 import Foreign.Ptr
-import Foreign.Storable
+import Foreign.Storable 
 import System.IO.Unsafe
 
 
 instance HasScheme Url where
   hasScheme (FullyQualifiedUrl _) = True
-  getScheme (FullyQualifiedUrl gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getScheme val
-  setScheme (FullyQualifiedUrl gurl) scheme = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> do
+  getScheme (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getScheme val
+  setScheme (FullyQualifiedUrl (FQU gurl)) scheme = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> do
     result <- I.setScheme val scheme
     foreignPtr <- newForeignPtr I.p'freeUrl result
-    return $ FullyQualifiedUrl foreignPtr
+    return $ FullyQualifiedUrl $ FQU foreignPtr
 
 
 instance HasHostname Url where
-  getHostname (FullyQualifiedUrl gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getHostname val
+  getHostname (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getHostname val
   hasHostname (FullyQualifiedUrl _) = True
 
 instance Eq Url where
-  (FullyQualifiedUrl url1) == (FullyQualifiedUrl url2) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
-  (RelativeUrl url1) == (RelativeUrl url2) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
-  (InvalidUrl url1) == (InvalidUrl url2) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
-  (FileUrl url1) == (FileUrl url2) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
+  (FullyQualifiedUrl (FQU url1)) == (FullyQualifiedUrl (FQU url2)) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
+  (RelativeUrl (RU url1)) == (RelativeUrl (RU url2)) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
+  (InvalidUrl (IU url1)) == (InvalidUrl (IU url2)) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
+  (FileUrl (FU url1)) == (FileUrl (FU url2)) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
   _ == _ = False
 
 instance Show Url where
@@ -65,42 +65,42 @@ parseUrl str =
       foreignPtr <- newForeignPtr I.p'freeUrl parsed
       valid <- I.isValid parsed
       case valid of
-        False -> return $ InvalidUrl foreignPtr
+        False -> return $ InvalidUrl $ IU foreignPtr
         True -> do
           standard <- I.isStandard  parsed
           case standard of
-            False -> return $ RelativeUrl foreignPtr
-            True -> return $ FullyQualifiedUrl foreignPtr
+            False -> return $ RelativeUrl $ RU foreignPtr
+            True -> return $ FullyQualifiedUrl $ FQU foreignPtr
 
 {- This function is unsafe. It assumes that the string is fully qualified url. Use with caution. -}
-parseFullyQualifiedUrl :: Text -> Url
+parseFullyQualifiedUrl :: Text -> FullyQualifiedUrl
 parseFullyQualifiedUrl str =
   unsafePerformIO $ 
     mask_ $ do
       parsed <- I.parseUrl str
       foreignPtr <- newForeignPtr I.p'freeUrl parsed
-      return $ FullyQualifiedUrl foreignPtr
+      return $ FQU foreignPtr
 
-resolveRelativeUrl :: Url -> Url -> Url
-resolveRelativeUrl (FullyQualifiedUrl gurl) (RelativeUrl relativeUrl) =
+resolveRelativeUrl :: FullyQualifiedUrl -> RelativeUrl -> FullyQualifiedUrl
+resolveRelativeUrl (FQU gurl) (RU relativeUrl) =
   unsafePerformIO $ mask_ $ 
     withForeignPtr gurl $ \ fullUrl ->
       withForeignPtr relativeUrl $ \ relGurl -> do
          result <- I.resolve relGurl fullUrl
          foreignPtr <- newForeignPtr I.p'freeUrl result
-         return $ FullyQualifiedUrl foreignPtr
+         return $ FQU foreignPtr
 
 toText :: Url -> Text
 toText url = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
   where
     gurl = case url of
-             (FullyQualifiedUrl ptr) -> ptr
-             (RelativeUrl ptr) -> ptr
+             (FullyQualifiedUrl (FQU ptr)) -> ptr
+             (RelativeUrl (RU ptr)) -> ptr
 
 isStandard :: Url -> Bool
 isStandard url = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
   where
     gurl = case url of
-             (FullyQualifiedUrl ptr) -> ptr
-             (RelativeUrl ptr) -> ptr
+             (FullyQualifiedUrl (FQU ptr)) -> ptr
+             (RelativeUrl (RU ptr)) -> ptr
 

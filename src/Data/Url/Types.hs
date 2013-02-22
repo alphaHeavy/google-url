@@ -7,6 +7,8 @@
 
 
 module Data.Url.Types (
+  FileUrl(..),
+  FullyQualifiedUrl(..),
   HasHostname(..),
   HasPath(..),
   HasPort(..),
@@ -14,6 +16,8 @@ module Data.Url.Types (
   HasFragment(..),
   HasScheme(..),
   Hostname(..),
+  InvalidUrl(..),
+  RelativeUrl(..),
   Scheme (..),
   Url(..)) where
 
@@ -21,6 +25,14 @@ import Bindings.Url
 import Data.Text (Text)
 import Foreign.ForeignPtr
 
+data FullyQualifiedUrl = FQU (ForeignPtr Gurl)
+data RelativeUrl = RU (ForeignPtr Gurl)
+data InvalidUrl = IU (ForeignPtr Gurl)
+data FileUrl = FU (ForeignPtr Gurl)
+
+data Url = FullyQualifiedUrl FullyQualifiedUrl | RelativeUrl RelativeUrl | InvalidUrl InvalidUrl | FileUrl FileUrl
+
+{-
 data Url where
   FullyQualifiedUrl :: ForeignPtr Gurl -> Url
   RelativeUrl :: ForeignPtr Gurl -> Url
@@ -30,9 +42,9 @@ data Url where
 --unsafeParseCanonical :: ByteString -> Url 'Full
 
 --instance Eq Url where
-  
+-}
 
-data Scheme = Http | Https | Mail deriving (Show,Eq)
+data Scheme = Http | Https | Mail deriving (Show,Eq,Ord)
 
 data Username = Username Text deriving (Show,Eq)
 
