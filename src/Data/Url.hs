@@ -5,11 +5,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Data.Url (
-  isStandard,
   parseUrl,
   parseFullyQualifiedUrl,
   resolveRelativeUrl,
-  toText,
   FileUrl(..),
   FullyQualifiedUrl(..),
   HasHostname(..),
@@ -24,17 +22,11 @@ module Data.Url (
   module Data.Url.Types) where
 
 import Control.Exception (mask_)
-import Control.Monad.Trans
-import Data.ByteString
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Url.Internal as I
 import Data.Url.Types
-import Foreign.C.String
-import Foreign.C.Types
 import Foreign.ForeignPtr
-import Foreign.Ptr
-import Foreign.Storable 
 import System.IO.Unsafe
 
 
@@ -46,6 +38,19 @@ instance HasScheme Url where
     foreignPtr <- newForeignPtr I.p'freeUrl result
     return $ FullyQualifiedUrl $ FQU foreignPtr
 
+instance HasUrl FullyQualifiedUrl where
+  toText (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val 
+  isStandard (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
+
+instance HasUrl Url where
+  toText (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
+  toText (RelativeUrl (RU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
+  toText (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
+  toText (FileUrl (FU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
+  isStandard (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
+  isStandard (RelativeUrl (RU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
+  isStandard (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
+  isStandard (FileUrl (FU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
 
 instance HasHostname Url where
   getHostname (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getHostname val
@@ -105,18 +110,3 @@ resolveRelativeUrl (FQU gurl) (RU relativeUrl) =
          result <- I.resolve relGurl fullUrl
          foreignPtr <- newForeignPtr I.p'freeUrl result
          return $ FQU foreignPtr
-
-toText :: Url -> Text
-toText url = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
-  where
-    gurl = case url of
-             (FullyQualifiedUrl (FQU ptr)) -> ptr
-             (RelativeUrl (RU ptr)) -> ptr
-
-isStandard :: Url -> Bool
-isStandard url = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
-  where
-    gurl = case url of
-             (FullyQualifiedUrl (FQU ptr)) -> ptr
-             (RelativeUrl (RU ptr)) -> ptr
-

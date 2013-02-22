@@ -15,6 +15,7 @@ module Data.Url.Types (
   HasQuery(..),
   HasFragment(..),
   HasScheme(..),
+  HasUrl(..),
   Hostname(..),
   InvalidUrl(..),
   RelativeUrl(..),
@@ -73,6 +74,10 @@ data Path = Path [Text] deriving (Show,Eq,Ord)
 data Query = Query [(Text,Maybe Text)] deriving (Eq,Ord,Show)
 
 data Fragment = Fragment Text deriving (Eq,Ord,Show)
+
+class HasUrl a where
+  toText :: a -> Text
+  isStandard :: a -> Bool
 
 class HasScheme a where
   getScheme :: a -> Scheme

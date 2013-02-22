@@ -5,12 +5,13 @@ module Data.Url.Internal (
   Data.Url.Internal.getScheme,
   Data.Url.Internal.getHostname,
   Data.Url.Internal.setScheme,
+  Data.Url.Internal.toText,
   p'freeUrl,
-  isStandard,
+  Data.Url.Internal.isStandard,
   isValid,
   parseUrl,
-  resolve,
-  toText) where
+  resolve
+  ) where
 
 import Bindings.Url
 import Control.Exception (mask_)
