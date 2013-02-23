@@ -103,3 +103,9 @@ class HasFragment a where
 
 instance NFData Hostname where
   rnf (Hostname x) = rnf x `seq` ()
+
+instance NFData Url where
+  rnf (FullyQualifiedUrl x) = rnf x `seq` ()
+  rnf (RelativeUrl x) = rnf x `seq` ()
+  rnf (InvalidUrl x) = rnf x `seq` ()
+  rnf (FileUrl x) = rnf x `seq` ()
