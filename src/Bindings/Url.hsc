@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-unused-binds #-}
+
 #include <bindings.dsl.h>
 #include "wrapper.h"
 
@@ -28,6 +30,7 @@ module Bindings.Url (
   c'isValid,
   c'parseUrl,
   c'resolve,
+  c'setPort,
   c'setScheme,
   c'swap,
   c'toString,
@@ -83,3 +86,4 @@ type GurlPtr = Ptr Gurl
 #ccall equals , GurlPtr -> GurlPtr -> IO CInt
 
 #ccall setScheme , GurlPtr -> CString -> IO GurlPtr
+#ccall setPort , GurlPtr -> CString -> IO GurlPtr

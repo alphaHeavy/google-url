@@ -231,6 +231,15 @@ void* setScheme (const void *gurl, const char *scheme)
   return (void *) new GURL(result);
 }
 
+void* setPort (const void *gurl, const char *port)
+{
+  GURL *ptr = (GURL *)gurl;
+  Replacements<char> r;
+  r.SetPort(port, ptr->parsed_for_possibly_invalid_spec().port);
+  GURL result = ptr->ReplaceComponents(r);
+  return (void *) new GURL(result);
+}
+
 int equals(const void *gurl1, const void *gurl2)
 {
   GURL *ptr1 = (GURL *)gurl1;

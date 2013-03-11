@@ -1,7 +1,9 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
@@ -18,12 +20,16 @@ module Data.Url.Types (
   HasUrl(..),
   Hostname(..),
   InvalidUrl(..),
+  Path(..),
+  Port(..),
   RelativeUrl(..),
   Scheme (..),
   Url(..)) where
 
 import Bindings.Url
 import Control.DeepSeq
+import Data.ByteString (ByteString)
+import Data.Int
 import Data.Text (Text)
 import Foreign.ForeignPtr
 
@@ -46,28 +52,15 @@ instance NFData InvalidUrl where
 instance NFData FileUrl where
   rnf _ = ()
 
-
-{-
-data Url where
-  FullyQualifiedUrl :: ForeignPtr Gurl -> Url
-  RelativeUrl :: ForeignPtr Gurl -> Url
-  InvalidUrl :: ForeignPtr Gurl -> Url
-  FileUrl :: ForeignPtr Gurl -> Url
-
---unsafeParseCanonical :: ByteString -> Url 'Full
-
---instance Eq Url where
--}
-
 data Scheme = Http | Https | Mail deriving (Show,Eq,Ord)
 
-data Username = Username Text deriving (Show,Eq)
+data Username = Username Text deriving (Show,Eq,Ord)
 
-data Password = Password Text deriving (Show,Eq)
+data Password = Password Text deriving (Show,Eq,Ord)
 
 data Hostname = Hostname Text deriving (Show,Eq,Ord)
 
-data Port = Port Int deriving (Show,Eq,Ord)
+newtype Port = Port Int16 deriving (Enum,Eq,Integral,Num,Ord,Real,Show)
 
 data Path = Path [Text] deriving (Show,Eq,Ord)
 
@@ -78,6 +71,7 @@ data Fragment = Fragment Text deriving (Eq,Ord,Show)
 class HasUrl a where
   toText :: a -> Text
   isStandard :: a -> Bool
+  isValid :: a -> Bool
 
 class HasScheme a where
   getScheme :: a -> Scheme
@@ -90,10 +84,13 @@ class HasHostname a where
 
 class HasPort a where
   getPort :: a -> Port
+  getEffectivePort :: a -> Port
   hasPort :: a -> Bool
+  setPort :: a -> Port -> a
 
 class HasPath a where
   getPath :: a -> Path
+  getPathForRequest :: a -> ByteString
 
 class HasQuery a where
   getQuery :: a -> Maybe Query

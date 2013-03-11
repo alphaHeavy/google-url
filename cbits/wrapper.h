@@ -19,6 +19,7 @@ extern "C" {
   char* getFragment(const void *gurl);
 
   void* setScheme(const void *gurl, const char *scheme);
+  void* setPort(const void *gurl, const char *port);
 
   int hasScheme(const void *gurl);
   int hasUsername(const void *gurl);

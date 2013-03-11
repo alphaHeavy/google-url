@@ -3,6 +3,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Data.Url (
   parseUrl,
@@ -32,15 +33,35 @@ import System.IO.Unsafe
 
 instance HasScheme Url where
   hasScheme (FullyQualifiedUrl _) = True
+  hasScheme (RelativeUrl _) = False
+  hasScheme (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.hasScheme val 
+  hasScheme (FileUrl (FU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.hasScheme val
+
   getScheme (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getScheme val
+  getScheme (RelativeUrl _) = error "Relative Urls have no Scheme"
+  getScheme (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getScheme val
+  getScheme (FileUrl (FU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getScheme val
+
+
   setScheme (FullyQualifiedUrl (FQU gurl)) scheme = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> do
     result <- I.setScheme val scheme
     foreignPtr <- newForeignPtr I.p'freeUrl result
     return $ FullyQualifiedUrl $ FQU foreignPtr
+  setScheme (InvalidUrl (IU gurl)) scheme = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> do
+    result <- I.setScheme val scheme
+    foreignPtr <- newForeignPtr I.p'freeUrl result
+    return $ InvalidUrl $ IU foreignPtr
+  setScheme (FileUrl (FU gurl)) scheme = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> do
+    result <- I.setScheme val scheme
+    foreignPtr <- newForeignPtr I.p'freeUrl result
+    return $ FileUrl $ FU foreignPtr
+
 
 instance HasUrl FullyQualifiedUrl where
   toText (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val 
   isStandard (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
+  isValid (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isValid val
+
 
 instance HasUrl Url where
   toText (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
@@ -51,6 +72,31 @@ instance HasUrl Url where
   isStandard (RelativeUrl (RU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
   isStandard (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
   isStandard (FileUrl (FU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
+  isValid (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isValid val
+  isValid (RelativeUrl (RU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isValid val
+  isValid (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isValid val
+  isValid (FileUrl (FU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isValid val
+  
+
+instance HasPort Url where
+  hasPort (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.hasPort val
+  hasPort (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.hasPort val
+  hasPort (RelativeUrl _) = False
+  hasPort (FileUrl _) = False
+
+  getPort (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getPort val
+  getPort (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getPort val
+
+  getEffectivePort (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getEffectivePort val
+  setPort (FullyQualifiedUrl (FQU gurl)) port = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> do
+    result <- I.setPort val port
+    foreignPtr <- newForeignPtr I.p'freeUrl result
+    return $ FullyQualifiedUrl $ FQU foreignPtr
+
+
+instance HasPath Url where
+  getPath (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getPath val
+  getPathForRequest (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getPathForRequest val
 
 instance HasHostname Url where
   getHostname (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getHostname val
@@ -59,6 +105,15 @@ instance HasHostname Url where
 instance HasHostname FullyQualifiedUrl where
   getHostname (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getHostname val
   hasHostname (FQU _) = True
+
+instance HasPort FullyQualifiedUrl where
+  hasPort _ = True
+  getPort (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getPort val
+  getEffectivePort (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getEffectivePort val
+  setPort (FQU gurl) port = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> do
+    result <- I.setPort val port
+    foreignPtr <- newForeignPtr I.p'freeUrl result
+    return $ FQU foreignPtr
 
 instance Eq Url where
   (FullyQualifiedUrl (FQU url1)) == (FullyQualifiedUrl (FQU url2)) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
