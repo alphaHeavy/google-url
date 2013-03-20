@@ -38,7 +38,6 @@ instance HasScheme Url where
   hasScheme (FileUrl (FU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.hasScheme val
 
   getScheme (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getScheme val
-  getScheme (RelativeUrl _) = error "Relative Urls have no Scheme"
   getScheme (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getScheme val
   getScheme (FileUrl (FU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getScheme val
 
@@ -101,6 +100,14 @@ instance HasPath Url where
 instance HasHostname Url where
   getHostname (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getHostname val
   hasHostname (FullyQualifiedUrl _) = True
+
+instance HasScheme FullyQualifiedUrl where
+  hasScheme _ = True
+  getScheme (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getScheme val
+  setScheme (FQU gurl) scheme = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> do
+    result <- I.setScheme val scheme
+    foreignPtr <- newForeignPtr I.p'freeUrl result
+    return $ FQU foreignPtr 
 
 instance HasHostname FullyQualifiedUrl where
   getHostname (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getHostname val
