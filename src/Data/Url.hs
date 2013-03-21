@@ -122,6 +122,10 @@ instance HasPort FullyQualifiedUrl where
     foreignPtr <- newForeignPtr I.p'freeUrl result
     return $ FQU foreignPtr
 
+instance HasPath FullyQualifiedUrl where
+  getPath (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getPath val
+  getPathForRequest (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getPathForRequest val
+
 instance Eq Url where
   (FullyQualifiedUrl (FQU url1)) == (FullyQualifiedUrl (FQU url2)) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
   (RelativeUrl (RU url1)) == (RelativeUrl (RU url2)) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
