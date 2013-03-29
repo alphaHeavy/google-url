@@ -81,7 +81,7 @@ type GurlPtr = Ptr Gurl
 #ccall schemeIsFileSystem , GurlPtr -> IO CInt
 #ccall schemeIsSecure , GurlPtr -> IO CInt
 #ccall hostIsIPAddress , GurlPtr -> IO CInt
-#ccall resolve , GurlPtr -> GurlPtr -> IO GurlPtr
+#ccall resolve , CString -> GurlPtr -> IO GurlPtr
 #ccall isValid , GurlPtr -> IO CInt
 #ccall equals , GurlPtr -> GurlPtr -> IO CInt
 

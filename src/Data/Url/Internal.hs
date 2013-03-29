@@ -4,6 +4,7 @@
 module Data.Url.Internal (
   Data.Url.Internal.equals,
   Data.Url.Internal.getScheme,
+  Data.Url.Internal.getFragment,
   Data.Url.Internal.getHostname,
   Data.Url.Internal.setScheme,
   Data.Url.Internal.getPort,
@@ -13,17 +14,22 @@ module Data.Url.Internal (
   Data.Url.Internal.getPath,
   Data.Url.Internal.getPathForRequest,
   Data.Url.Internal.hasPort,
+  Data.Url.Internal.getQuery,
   Data.Url.Internal.hasScheme,
   p'freeUrl,
   Data.Url.Internal.isStandard,
   Data.Url.Internal.isValid,
   parseUrl,
-  resolve
+  resolve,
+  getPathRaw,
+  getFragmentRaw,
+  getQueryRaw
   ) where
 
 import Bindings.Url
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
+import qualified Data.List as L
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Url.Types
@@ -55,6 +61,7 @@ getScheme :: GurlPtr -> IO Scheme
 getScheme gurl = do
   str <- c'getScheme gurl
   str' <- peekCString str
+  free str
   return $ makeScheme $ T.pack str'
 
 setScheme :: GurlPtr -> Scheme -> IO GurlPtr
@@ -66,6 +73,7 @@ getHostname :: GurlPtr -> IO Hostname
 getHostname gurl = do
   str <- c'getHostname gurl
   str' <- peekCString str
+  free str
   return $ Hostname $ T.pack str'
 
 hasPort :: GurlPtr -> IO Bool
@@ -92,12 +100,51 @@ getPath :: GurlPtr -> IO Path
 getPath gurl = do
   str <- c'getPath gurl
   str' <- peekCString str
-  return $ Path $ T.splitOn "/" $ T.pack str'
+  free str
+  return $ Path $ L.drop 1 $ T.splitOn "/" $ T.pack str'
+
+getPathRaw :: GurlPtr -> IO ByteString
+getPathRaw gurl = do
+  str <- c'getPath gurl
+  let str' = B.packCString str
+  free str
+  str'
 
 getPathForRequest :: GurlPtr -> IO ByteString
 getPathForRequest gurl = do
   str <- c'getPathForRequest gurl
-  B.packCString str 
+  let str' = B.packCString str
+  free str
+  str'
+
+getQuery :: GurlPtr -> IO Query
+getQuery gurl = do
+  str <- c'getQuery gurl
+  str' <- peekCString str
+  free str
+  return $ Query $ fmap (\ [k,v] -> (k,if T.null v then Nothing else Just v)) $ L.filter (\ x -> L.length x > 1) $ fmap (T.splitOn "=") $ T.splitOn "&" $ T.pack str'
+
+getQueryRaw :: GurlPtr -> IO ByteString
+getQueryRaw gurl = do
+  str <- c'getQuery gurl
+  let str' = B.packCString str
+  free str
+  str'
+
+getFragment :: GurlPtr -> IO Fragment
+getFragment gurl = do
+  str <- c'getFragment gurl
+  str' <- peekCString str
+  free str
+  return $ Fragment $ T.pack str'
+
+
+getFragmentRaw :: GurlPtr -> IO ByteString
+getFragmentRaw gurl = do
+  str <- c'getFragment gurl
+  let str' = B.packCString str
+  free str
+  str'
 
 isStandard :: GurlPtr -> IO Bool
 isStandard gurl = do
@@ -117,9 +164,10 @@ parseUrl url = do
     val <- peek ptr
     return val
 
-resolve :: GurlPtr -> GurlPtr -> IO GurlPtr
+resolve :: Text -> GurlPtr -> IO GurlPtr
 resolve relativeUrl gurl = do
-  result <- c'resolve relativeUrl gurl
+  cstr <- newCString $ T.unpack relativeUrl
+  result <- c'resolve cstr gurl
   return result
 
 toText :: GurlPtr -> IO Text

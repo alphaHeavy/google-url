@@ -48,7 +48,7 @@ extern "C" {
 
   int hostIsIPAddress(const void *gurl);
 
-  void* resolve(const void* relative, const void *gurl);
+  void* resolve(const char* relative, const void *gurl);
   int isValid(const void *gurl);
   int equals(const void *gurl1, const void *gurl2);
 

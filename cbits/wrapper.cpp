@@ -208,11 +208,11 @@ int hostIsIPAddress(const void *gurl)
   return url->HostIsIPAddress();
 }
 
-void* resolve(const void* relative, const void *gurl)
+void* resolve(const char* relative, const void *gurl)
 {
-  GURL *ptr = (GURL *)relative;
+  string str = string(relative); 
   GURL *url = (GURL *)gurl;
-  GURL newUrl = url->Resolve(ptr->spec());
+  GURL newUrl = url->Resolve(str);
   return (void  *)new GURL(newUrl);
 }
 

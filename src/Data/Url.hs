@@ -23,6 +23,7 @@ module Data.Url (
   module Data.Url.Types) where
 
 import Control.Exception (mask_)
+import qualified Data.List as L
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Url.Internal as I
@@ -33,7 +34,6 @@ import System.IO.Unsafe
 
 instance HasScheme Url where
   hasScheme (FullyQualifiedUrl _) = True
-  hasScheme (RelativeUrl _) = False
   hasScheme (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.hasScheme val 
   hasScheme (FileUrl (FU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.hasScheme val
 
@@ -64,15 +64,12 @@ instance HasUrl FullyQualifiedUrl where
 
 instance HasUrl Url where
   toText (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
-  toText (RelativeUrl (RU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
   toText (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
   toText (FileUrl (FU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
   isStandard (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
-  isStandard (RelativeUrl (RU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
   isStandard (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
   isStandard (FileUrl (FU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
   isValid (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isValid val
-  isValid (RelativeUrl (RU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isValid val
   isValid (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isValid val
   isValid (FileUrl (FU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isValid val
   
@@ -80,7 +77,6 @@ instance HasUrl Url where
 instance HasPort Url where
   hasPort (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.hasPort val
   hasPort (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.hasPort val
-  hasPort (RelativeUrl _) = False
   hasPort (FileUrl _) = False
 
   getPort (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getPort val
@@ -124,11 +120,23 @@ instance HasPort FullyQualifiedUrl where
 
 instance HasPath FullyQualifiedUrl where
   getPath (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getPath val
-  getPathForRequest (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getPathForRequest val
+  getPathForRequest (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getPathRaw val
+
+instance HasQuery FullyQualifiedUrl where
+  getQuery (FQU gurl) = 
+    let x@(Query y) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getQuery val
+    in if L.length y > 0 then Just x else Nothing
+  getQueryForRequest (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getQueryRaw val
+
+instance HasFragment FullyQualifiedUrl where
+  getFragment (FQU gurl) = 
+    let x@(Fragment y) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getFragment val
+    in if T.null y then Nothing else Just x
+  getFragmentForRequest (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getFragmentRaw val
+
 
 instance Eq Url where
   (FullyQualifiedUrl (FQU url1)) == (FullyQualifiedUrl (FQU url2)) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
-  (RelativeUrl (RU url1)) == (RelativeUrl (RU url2)) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
   (InvalidUrl (IU url1)) == (InvalidUrl (IU url2)) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
   (FileUrl (FU url1)) == (FileUrl (FU url2)) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
   _ == _ = False
@@ -160,7 +168,7 @@ parseUrl str =
         True -> do
           standard <- I.isStandard  parsed
           case standard of
-            False -> return $ RelativeUrl $ RU foreignPtr
+            False -> undefined
             True -> return $ FullyQualifiedUrl $ FQU foreignPtr
 
 {- This function is unsafe. It assumes that the string is fully qualified url. Use with caution. -}
@@ -172,11 +180,10 @@ parseFullyQualifiedUrl str =
       foreignPtr <- newForeignPtr I.p'freeUrl parsed
       return $ FQU foreignPtr
 
-resolveRelativeUrl :: FullyQualifiedUrl -> RelativeUrl -> FullyQualifiedUrl
-resolveRelativeUrl (FQU gurl) (RU relativeUrl) =
+resolveRelativeUrl :: FullyQualifiedUrl -> Text -> FullyQualifiedUrl
+resolveRelativeUrl (FQU gurl) relativeUrl =
   unsafePerformIO $ mask_ $ 
-    withForeignPtr gurl $ \ fullUrl ->
-      withForeignPtr relativeUrl $ \ relGurl -> do
-         result <- I.resolve relGurl fullUrl
-         foreignPtr <- newForeignPtr I.p'freeUrl result
-         return $ FQU foreignPtr
+    withForeignPtr gurl $ \ fullUrl -> do
+      result <- I.resolve relativeUrl fullUrl
+      foreignPtr <- newForeignPtr I.p'freeUrl result
+      return $ FQU foreignPtr

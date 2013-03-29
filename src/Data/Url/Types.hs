@@ -10,6 +10,7 @@
 
 module Data.Url.Types (
   FileUrl(..),
+  Fragment(..),
   FullyQualifiedUrl(..),
   HasHostname(..),
   HasPath(..),
@@ -22,6 +23,7 @@ module Data.Url.Types (
   InvalidUrl(..),
   Path(..),
   Port(..),
+  Query(..),
   RelativeUrl(..),
   Scheme (..),
   Url(..)) where
@@ -38,7 +40,7 @@ data RelativeUrl = RU (ForeignPtr Gurl)
 data InvalidUrl = IU (ForeignPtr Gurl)
 data FileUrl = FU (ForeignPtr Gurl)
 
-data Url = FullyQualifiedUrl FullyQualifiedUrl | RelativeUrl RelativeUrl | InvalidUrl InvalidUrl | FileUrl FileUrl
+data Url = FullyQualifiedUrl FullyQualifiedUrl | InvalidUrl InvalidUrl | FileUrl FileUrl
 
 instance NFData FullyQualifiedUrl where
   rnf _ = ()
@@ -94,15 +96,16 @@ class HasPath a where
 
 class HasQuery a where
   getQuery :: a -> Maybe Query
+  getQueryForRequest :: a -> ByteString
 
 class HasFragment a where
   getFragment :: a -> Maybe Fragment
+  getFragmentForRequest :: a -> ByteString
 
 instance NFData Hostname where
   rnf (Hostname x) = rnf x `seq` ()
 
 instance NFData Url where
   rnf (FullyQualifiedUrl x) = rnf x `seq` ()
-  rnf (RelativeUrl x) = rnf x `seq` ()
   rnf (InvalidUrl x) = rnf x `seq` ()
   rnf (FileUrl x) = rnf x `seq` ()
