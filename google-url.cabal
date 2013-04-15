@@ -25,7 +25,7 @@ library
     cbits/wrapper.cpp
     cbits/googleurl/base/logging.cc
     cbits/googleurl/base/string16.cc
-    cbits/googleurl/src/GURL.cc
+    cbits/googleurl/src/gurl.cc
     cbits/googleurl/src/url_canon_etc.cc
     cbits/googleurl/src/url_canon_filesystemurl.cc
     cbits/googleurl/src/url_canon_fileurl.cc
