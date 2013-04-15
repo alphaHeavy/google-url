@@ -51,6 +51,7 @@
 // of carrying UTF-16-encoded data.
 
 #include <string>
+#include <stdio.h>
 
 #include "base/basictypes.h"
 
