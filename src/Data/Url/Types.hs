@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE KindSignatures #-}
@@ -33,6 +34,7 @@ import Control.DeepSeq
 import Data.ByteString (ByteString)
 import Data.Int
 import Data.Text (Text)
+import Data.Typeable
 import Foreign.ForeignPtr
 
 data FullyQualifiedUrl = FQU (ForeignPtr Gurl)
@@ -60,7 +62,7 @@ data Username = Username Text deriving (Show,Eq,Ord)
 
 data Password = Password Text deriving (Show,Eq,Ord)
 
-data Hostname = Hostname Text deriving (Show,Eq,Ord)
+data Hostname = Hostname Text deriving (Show,Eq,Ord,Typeable)
 
 newtype Port = Port Int16 deriving (Enum,Eq,Integral,Num,Ord,Real,Show)
 
