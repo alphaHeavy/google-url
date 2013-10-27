@@ -2,9 +2,7 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE PolyKinds #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
@@ -33,7 +31,9 @@ import Bindings.Url
 import Control.DeepSeq
 import Data.ByteString (ByteString)
 import Data.Int
+import Data.String
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Typeable
 import Foreign.ForeignPtr
 
@@ -63,6 +63,9 @@ data Username = Username Text deriving (Show,Eq,Ord)
 data Password = Password Text deriving (Show,Eq,Ord)
 
 data Hostname = Hostname Text deriving (Show,Eq,Ord,Typeable)
+
+instance IsString Hostname where
+  fromString = Hostname . T.pack
 
 newtype Port = Port Int16 deriving (Enum,Eq,Integral,Num,Ord,Real,Show)
 
