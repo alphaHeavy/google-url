@@ -141,6 +141,9 @@ instance Eq Url where
   (FileUrl (FU url1)) == (FileUrl (FU url2)) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
   _ == _ = False
 
+instance Eq FullyQualifiedUrl where
+  (FQU url1) == (FQU url2) = unsafePerformIO $ mask_ $ withForeignPtr url1 $ \ val1 -> withForeignPtr url2 $ \ val2 -> I.equals val1 val2
+
 instance Show Url where
   show = T.unpack . toText
 
