@@ -58,22 +58,22 @@ instance NFData FileUrl where
 
 data Scheme = Http | Https | Mail deriving (Show,Eq,Ord)
 
-data Username = Username Text deriving (Show,Eq,Ord)
+newtype Username = Username Text deriving (Show,Eq,Ord)
 
-data Password = Password Text deriving (Show,Eq,Ord)
+newtype Password = Password Text deriving (Show,Eq,Ord)
 
-data Hostname = Hostname Text deriving (Show,Eq,Ord,Typeable)
+newtype Hostname = Hostname Text deriving (Show,Eq,Ord,Typeable)
 
 instance IsString Hostname where
   fromString = Hostname . T.pack
 
 newtype Port = Port Int16 deriving (Enum,Eq,Integral,Num,Ord,Real,Show)
 
-data Path = Path [Text] deriving (Show,Eq,Ord)
+newtype Path = Path [Text] deriving (Show,Eq,Ord)
 
-data Query = Query [(Text,Maybe Text)] deriving (Eq,Ord,Show)
+newtype Query = Query [(Text,Maybe Text)] deriving (Eq,Ord,Show)
 
-data Fragment = Fragment Text deriving (Eq,Ord,Show)
+newtype Fragment = Fragment Text deriving (Eq,Ord,Show)
 
 class HasUrl a where
   toText :: a -> Text
