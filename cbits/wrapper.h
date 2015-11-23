@@ -1,10 +1,12 @@
 #ifndef _WRAPPER_H_
 #define _WRAPPER_H_
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-  void parseUrl(const char *url,const int url_len, void **result);
+  void parseUrl(const char *url, const size_t url_len, void **result);
 
   int isStandard(const void *gurl);
 
@@ -48,7 +50,7 @@ extern "C" {
 
   int hostIsIPAddress(const void *gurl);
 
-  void* resolve(const char* relative, const void *gurl);
+  void* resolve(const char* relative, size_t length, const void *gurl);
   int isValid(const void *gurl);
   int equals(const void *gurl1, const void *gurl2);
 

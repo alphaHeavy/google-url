@@ -6,7 +6,7 @@
 using namespace std;
 using namespace url_canon;
 
-void parseUrl(const char *url, const int url_len, void **res)
+void parseUrl(const char *url, const size_t url_len, void **res)
 {
   string str = string(url,url_len);
   GURL *gurl = new GURL(str);
@@ -208,12 +208,12 @@ int hostIsIPAddress(const void *gurl)
   return url->HostIsIPAddress();
 }
 
-void* resolve(const char* relative, const void *gurl)
+void* resolve(const char* relative, size_t length, const void *gurl)
 {
-  string str = string(relative); 
+  const string str(relative, length);
   GURL *url = (GURL *)gurl;
   GURL newUrl = url->Resolve(str);
-  return (void  *)new GURL(newUrl);
+  return new GURL(newUrl);
 }
 
 int isValid(const void *gurl)
