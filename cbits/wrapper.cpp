@@ -8,8 +8,8 @@ using namespace url_canon;
 
 void parseUrl(const char *url, const int url_len, void **res)
 {
-  string str = string(url,url_len); 
-  GURL *gurl = new GURL(str); 
+  string str = string(url,url_len);
+  GURL *gurl = new GURL(str);
   *res = (void *)gurl;
 }
 
@@ -63,7 +63,7 @@ int   getPort(const void *gurl)
 
 int   getEffectivePort(const void *gurl)
 {
-  GURL *url = (GURL*)gurl; 
+  GURL *url = (GURL*)gurl;
   return url->EffectiveIntPort();
 }
 
@@ -176,7 +176,7 @@ void* getOrigin(const void *gurl)
   GURL *url = (GURL*)gurl;
   GURL newUrl = url->GetOrigin();
   return new GURL(newUrl);
-} 
+}
 
 int schemeIs(const char *scheme, const void *gurl)
 {
