@@ -32,6 +32,7 @@ import qualified Data.ByteString as B
 import qualified Data.List as L
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Foreign as T
 import Data.Url.Types
 import Foreign.C.String
 import Foreign.C.Types
@@ -66,8 +67,8 @@ getScheme gurl = do
 
 setScheme :: GurlPtr -> Scheme -> IO GurlPtr
 setScheme gurl scheme = do
-  cstr <- newCString $ show scheme 
-  c'setScheme gurl cstr
+  withCString (show scheme) $ \ cstr ->
+    c'setScheme gurl cstr
 
 getHostname :: GurlPtr -> IO Hostname
 getHostname gurl = do
@@ -93,8 +94,8 @@ getEffectivePort gurl = do
 
 setPort :: GurlPtr -> Port -> IO GurlPtr
 setPort gurl (Port port) = do
-  cstr <- newCString $ show port
-  c'setPort gurl cstr
+  withCString (show port) $ \ cstr ->
+    c'setPort gurl cstr
 
 getPath :: GurlPtr -> IO Path
 getPath gurl = do
@@ -157,18 +158,17 @@ isValid gurl = do
   return $ toBool result
 
 parseUrl :: Text -> IO GurlPtr
-parseUrl url = do
-  cstr <- newCString $ T.unpack url
+parseUrl url =
+  T.withCStringLen url $ \ (cstr, clen) ->
   alloca $ \ ptr -> do
-    c'parseUrl cstr (CSize $ fromIntegral $ T.length url) ptr
+    c'parseUrl cstr (fromIntegral clen) ptr
     val <- peek ptr
     return val
 
 resolve :: Text -> GurlPtr -> IO GurlPtr
 resolve relativeUrl gurl = do
-  cstr <- newCString $ T.unpack relativeUrl
-  result <- c'resolve cstr gurl
-  return result
+  T.withCStringLen relativeUrl $ \ (cstr, clen) ->
+    c'resolve cstr (fromIntegral clen) gurl
 
 toText :: GurlPtr -> IO Text
 toText gurl = do
