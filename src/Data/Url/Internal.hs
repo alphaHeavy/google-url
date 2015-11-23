@@ -28,14 +28,14 @@ module Data.Url.Internal (
 
 import Bindings.Url
 import Data.ByteString (ByteString)
-import qualified Data.ByteString as B
+import Data.ByteString.Unsafe (unsafePackMallocCString)
 import qualified Data.List as L
 import Data.Text (Text)
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 import qualified Data.Text.Foreign as T
 import Data.Url.Types
 import Foreign.C.String
-import Foreign.C.Types
 import Foreign.Marshal.Alloc
 import Foreign.Storable
 
@@ -60,10 +60,8 @@ hasScheme gurl = do
 
 getScheme :: GurlPtr -> IO Scheme
 getScheme gurl = do
-  str <- c'getScheme gurl
-  str' <- peekCString str
-  free str
-  return $ makeScheme $ T.pack str'
+  bs <- unsafePackMallocCString =<< c'getScheme gurl
+  return . makeScheme $! T.decodeUtf8 bs
 
 setScheme :: GurlPtr -> Scheme -> IO GurlPtr
 setScheme gurl scheme = do
@@ -72,10 +70,8 @@ setScheme gurl scheme = do
 
 getHostname :: GurlPtr -> IO Hostname
 getHostname gurl = do
-  str <- c'getHostname gurl
-  str' <- peekCString str
-  free str
-  return $ Hostname $ T.pack str'
+  bs <- unsafePackMallocCString =<< c'getHostname gurl
+  return . Hostname $! T.decodeUtf8 bs
 
 hasPort :: GurlPtr -> IO Bool
 hasPort gurl = do
@@ -99,53 +95,34 @@ setPort gurl (Port port) = do
 
 getPath :: GurlPtr -> IO Path
 getPath gurl = do
-  str <- c'getPath gurl
-  str' <- peekCString str
-  free str
-  return $ Path $ L.drop 1 $ T.splitOn "/" $ T.pack str'
+  bs <- getPathRaw gurl
+  return . Path $! L.drop 1 $ T.splitOn "/" $ T.decodeUtf8 bs
 
 getPathRaw :: GurlPtr -> IO ByteString
-getPathRaw gurl = do
-  str <- c'getPath gurl
-  let str' = B.packCString str
-  free str
-  str'
+getPathRaw gurl =
+  unsafePackMallocCString =<< c'getPath gurl
 
 getPathForRequest :: GurlPtr -> IO ByteString
-getPathForRequest gurl = do
-  str <- c'getPathForRequest gurl
-  let str' = B.packCString str
-  free str
-  str'
+getPathForRequest gurl =
+  unsafePackMallocCString =<< c'getPathForRequest gurl
 
 getQuery :: GurlPtr -> IO Query
 getQuery gurl = do
-  str <- c'getQuery gurl
-  str' <- peekCString str
-  free str
-  return $ Query $ fmap (\ [k,v] -> (k,if T.null v then Nothing else Just v)) $ L.filter (\ x -> L.length x > 1) $ fmap (T.splitOn "=") $ T.splitOn "&" $ T.pack str'
+  bs <- getQueryRaw gurl
+  return . Query $! fmap (\ [k,v] -> (k,if T.null v then Nothing else Just v)) $ L.filter (\ x -> L.length x > 1) $ fmap (T.splitOn "=") $ T.splitOn "&" $ T.decodeUtf8 bs
 
 getQueryRaw :: GurlPtr -> IO ByteString
-getQueryRaw gurl = do
-  str <- c'getQuery gurl
-  let str' = B.packCString str
-  free str
-  str'
+getQueryRaw gurl =
+  unsafePackMallocCString =<< c'getQuery gurl
 
 getFragment :: GurlPtr -> IO Fragment
 getFragment gurl = do
-  str <- c'getFragment gurl
-  str' <- peekCString str
-  free str
-  return $ Fragment $ T.pack str'
-
+  bs <- getFragmentRaw gurl
+  return . Fragment $! T.decodeUtf8 bs
 
 getFragmentRaw :: GurlPtr -> IO ByteString
-getFragmentRaw gurl = do
-  str <- c'getFragment gurl
-  let str' = B.packCString str
-  free str
-  str'
+getFragmentRaw gurl =
+  unsafePackMallocCString =<< c'getFragment gurl
 
 isStandard :: GurlPtr -> IO Bool
 isStandard gurl = do
@@ -172,9 +149,8 @@ resolve relativeUrl gurl = do
 
 toText :: GurlPtr -> IO Text
 toText gurl = do
-  str <- c'toString gurl
-  str' <- peekCString str
-  return $ T.pack str'
+  bs <- unsafePackMallocCString =<< c'toString gurl
+  return $! T.decodeUtf8 bs
 
 equals :: GurlPtr -> GurlPtr -> IO Bool
 equals ptr1 ptr2 = do
