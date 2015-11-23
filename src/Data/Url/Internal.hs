@@ -85,12 +85,12 @@ hasPort gurl = do
 getPort :: GurlPtr -> IO Port
 getPort gurl = do
   i <- c'getPort gurl
-  return $ Port $ fromIntegral i
+  return . Port $! fromIntegral i
 
 getEffectivePort :: GurlPtr -> IO Port
 getEffectivePort gurl = do
   i <- c'getEffectivePort gurl
-  return $ Port $ fromIntegral i
+  return . Port $! fromIntegral i
 
 setPort :: GurlPtr -> Port -> IO GurlPtr
 setPort gurl (Port port) = do
