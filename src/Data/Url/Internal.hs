@@ -9,11 +9,15 @@ module Data.Url.Internal (
   Data.Url.Internal.setScheme,
   Data.Url.Internal.getPort,
   Data.Url.Internal.getEffectivePort,
+  Data.Url.Internal.getPassword,
+  Data.Url.Internal.hasPassword,
+  Data.Url.Internal.getUsername,
   Data.Url.Internal.setPort,
   Data.Url.Internal.toText,
   Data.Url.Internal.getPath,
   Data.Url.Internal.getPathForRequest,
   Data.Url.Internal.hasPort,
+  Data.Url.Internal.hasUsername,
   Data.Url.Internal.getQuery,
   Data.Url.Internal.hasScheme,
   p'freeUrl,
@@ -51,7 +55,9 @@ makeScheme txt =
   case T.toLower txt of
     "http" -> Http
     "https" -> Https
-    _ -> error "Invalid Scheme"
+    "mailto" -> Mail
+    "file" -> File
+    x -> Unknown x
 
 hasScheme :: GurlPtr -> IO Bool
 hasScheme gurl = do
@@ -67,6 +73,30 @@ setScheme :: GurlPtr -> Scheme -> IO GurlPtr
 setScheme gurl scheme = do
   withCString (show scheme) $ \ cstr ->
     c'setScheme gurl cstr
+
+getUsername :: GurlPtr -> IO (Maybe ByteString)
+getUsername gurl = do
+  has <- c'hasUsername gurl
+  case has of
+    1 -> do
+      x <- unsafePackMallocCString =<< c'getUsername gurl
+      return $ Just x
+    _ -> return Nothing
+
+hasUsername :: GurlPtr -> IO Bool
+hasUsername gurl = return . toBool =<< c'hasUsername gurl
+
+getPassword :: GurlPtr -> IO (Maybe ByteString)
+getPassword gurl = do
+  has <- c'hasPassword gurl
+  case has of
+    1 -> do
+      x <- unsafePackMallocCString =<< c'getPassword gurl
+      return $ Just x
+    _ -> return Nothing
+
+hasPassword :: GurlPtr -> IO Bool
+hasPassword gurl = return . toBool =<< c'hasPassword gurl
 
 getHostname :: GurlPtr -> IO Hostname
 getHostname gurl = do

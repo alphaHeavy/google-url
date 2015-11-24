@@ -16,8 +16,10 @@ module Data.Url.Types (
   HasPort(..),
   HasQuery(..),
   HasFragment(..),
+  HasPassword(..),
   HasScheme(..),
   HasUrl(..),
+  HasUsername(..),
   Hostname(..),
   InvalidUrl(..),
   Path(..),
@@ -25,6 +27,7 @@ module Data.Url.Types (
   Query(..),
   RelativeUrl(..),
   Scheme (..),
+  UnknownUrl (..),
   Url(..)) where
 
 import Bindings.Url
@@ -41,8 +44,9 @@ data FullyQualifiedUrl = FQU (ForeignPtr Gurl)
 data RelativeUrl = RU (ForeignPtr Gurl)
 data InvalidUrl = IU (ForeignPtr Gurl)
 data FileUrl = FU (ForeignPtr Gurl)
+data UnknownUrl = UU (ForeignPtr Gurl)
 
-data Url = FullyQualifiedUrl FullyQualifiedUrl | InvalidUrl InvalidUrl | FileUrl FileUrl
+data Url = FullyQualifiedUrl FullyQualifiedUrl | InvalidUrl InvalidUrl | FileUrl FileUrl | UnknownUrl UnknownUrl
 
 instance NFData FullyQualifiedUrl where
   rnf _ = ()
@@ -56,7 +60,7 @@ instance NFData InvalidUrl where
 instance NFData FileUrl where
   rnf _ = ()
 
-data Scheme = Http | Https | Mail deriving (Show,Eq,Ord)
+data Scheme = Http | Https | Mail | File | Unknown Text deriving (Show,Eq,Ord)
 
 newtype Username = Username Text deriving (Show,Eq,Ord)
 
@@ -106,6 +110,14 @@ class HasQuery a where
 class HasFragment a where
   getFragment :: a -> Maybe Fragment
   getFragmentForRequest :: a -> ByteString
+
+class HasUsername a where
+  hasUsername :: a -> Bool
+  getUsername :: a -> Maybe ByteString
+
+class HasPassword a where
+  hasPassword :: a -> Bool
+  getPassword :: a -> Maybe ByteString
 
 instance NFData Hostname where
   rnf (Hostname x) = rnf x `seq` ()
