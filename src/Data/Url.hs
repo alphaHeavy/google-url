@@ -7,6 +7,7 @@
 
 module Data.Url (
   parseUrl,
+  parseResolveUrl,
   resolveRelativeUrl,
   unsafeParseFullyQualifiedUrl,
   FileUrl(..),
@@ -198,6 +199,13 @@ parseUrl str =
               case scheme of
                 Http -> return $ FullyQualifiedUrl $ FQU foreignPtr
                 Https -> return $ FullyQualifiedUrl $ FQU foreignPtr
+
+parseResolveUrl :: FullyQualifiedUrl -> Text -> Url
+parseResolveUrl fqu str =
+  let url = parseUrl str
+  in case url of
+       RelativeUrl x -> FullyQualifiedUrl $ resolveRelativeUrl fqu x
+       x -> x
 
 resolveRelativeUrl :: FullyQualifiedUrl -> RelativeUrl -> FullyQualifiedUrl
 resolveRelativeUrl (FQU gurl) relativeUrl =
