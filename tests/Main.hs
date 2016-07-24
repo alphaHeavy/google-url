@@ -2,6 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 import Data.Url
+import qualified Data.Text as T
 import Test.Tasty
 import Test.Tasty.HUnit
 
@@ -37,8 +38,19 @@ componentTest = testCase "Components" $ do
 componentTests :: TestTree
 componentTests = testGroup "Component Tests" [componentTest]
 
+testParseRelative :: TestTree
+testParseRelative = testCase "Parse Relative" $ do
+  let url = parseUrl "test.html"
+  case url of
+    r@(RelativeUrl _) -> do
+      False @=? isValid url
+    _ -> assertFailure "Url returned was not a relative url"
+
+parseTests :: TestTree
+parseTests = testGroup "Parsing Tests" [testParseRelative]
+
 allTests :: TestTree
-allTests = testGroup "Google Url Tests" [typeTests,componentTests]
+allTests = testGroup "Google Url Tests" [typeTests,componentTests,parseTests]
 
 main :: IO ()
 main = defaultMain allTests

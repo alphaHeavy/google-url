@@ -34,6 +34,7 @@ import Bindings.Url
 import Control.DeepSeq
 import Data.ByteString (ByteString)
 import Data.Int
+import Data.Map (Map)
 import Data.String
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -46,7 +47,7 @@ data InvalidUrl = IU (ForeignPtr Gurl)
 data FileUrl = FU (ForeignPtr Gurl)
 data UnknownUrl = UU (ForeignPtr Gurl)
 
-data Url = FullyQualifiedUrl FullyQualifiedUrl | InvalidUrl InvalidUrl | FileUrl FileUrl | UnknownUrl UnknownUrl
+data Url = FullyQualifiedUrl FullyQualifiedUrl | InvalidUrl InvalidUrl | FileUrl FileUrl | UnknownUrl UnknownUrl | RelativeUrl RelativeUrl
 
 instance NFData FullyQualifiedUrl where
   rnf _ = ()
@@ -75,7 +76,7 @@ newtype Port = Port Int16 deriving (Enum,Eq,Integral,Num,Ord,Real,Show)
 
 newtype Path = Path [Text] deriving (Show,Eq,Ord)
 
-newtype Query = Query [(Text,Maybe Text)] deriving (Eq,Ord,Show)
+newtype Query = Query (Map Text (Maybe Text)) deriving (Eq,Ord,Show)
 
 newtype Fragment = Fragment Text deriving (Eq,Ord,Show)
 

@@ -7,8 +7,8 @@
 
 module Data.Url (
   parseUrl,
-  parseFullyQualifiedUrl,
   resolveRelativeUrl,
+  unsafeParseFullyQualifiedUrl,
   FileUrl(..),
   FullyQualifiedUrl(..),
   HasHostname(..),
@@ -61,18 +61,26 @@ instance HasUrl FullyQualifiedUrl where
   isStandard (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
   isValid (FQU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isValid val
 
+instance HasUrl RelativeUrl where
+  toText (RU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
+  isStandard (RU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
+  isValid (RU gurl) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isValid val
+
 
 instance HasUrl Url where
   toText (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
   toText (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
   toText (FileUrl (FU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
   toText (UnknownUrl (UU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
+  toText (RelativeUrl (RU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.toText val
   isStandard (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
   isStandard (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
   isStandard (FileUrl (FU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
+  isStandard (RelativeUrl (RU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isStandard val
   isValid (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isValid val
   isValid (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isValid val
   isValid (FileUrl (FU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isValid val
+  isValid (RelativeUrl (RU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.isValid val
 
 instance HasPort Url where
   hasPort (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.hasPort val
@@ -175,7 +183,12 @@ parseUrl str =
       foreignPtr <- newForeignPtr I.p'freeUrl parsed
       valid <- I.isValid parsed
       case valid of
-        False -> return $ InvalidUrl $ IU foreignPtr
+        False ->do
+          scheme <- I.hasScheme parsed
+          Hostname hostname <- I.getHostname parsed
+          case (scheme == False) && (T.null hostname) of
+            True -> return $ RelativeUrl $ RU foreignPtr
+            False -> return $ InvalidUrl $ IU foreignPtr
         True -> do
           standard <- I.isStandard  parsed
           case standard of
@@ -186,19 +199,19 @@ parseUrl str =
                 Http -> return $ FullyQualifiedUrl $ FQU foreignPtr
                 Https -> return $ FullyQualifiedUrl $ FQU foreignPtr
 
-{- This function is unsafe. It assumes that the string is fully qualified url. Use with caution. -}
-parseFullyQualifiedUrl :: Text -> FullyQualifiedUrl
-parseFullyQualifiedUrl str =
+resolveRelativeUrl :: FullyQualifiedUrl -> RelativeUrl -> FullyQualifiedUrl
+resolveRelativeUrl (FQU gurl) relativeUrl =
+  unsafePerformIO $ mask_ $
+    withForeignPtr gurl $ \ fullUrl -> do
+      let txt = toText relativeUrl
+      result <- I.resolve txt fullUrl
+      foreignPtr <- newForeignPtr I.p'freeUrl result
+      return $ FQU foreignPtr
+
+unsafeParseFullyQualifiedUrl :: Text -> FullyQualifiedUrl
+unsafeParseFullyQualifiedUrl str =
   unsafePerformIO $
     mask_ $ do
       parsed <- I.parseUrl str
       foreignPtr <- newForeignPtr I.p'freeUrl parsed
-      return $ FQU foreignPtr
-
-resolveRelativeUrl :: FullyQualifiedUrl -> Text -> FullyQualifiedUrl
-resolveRelativeUrl (FQU gurl) relativeUrl =
-  unsafePerformIO $ mask_ $
-    withForeignPtr gurl $ \ fullUrl -> do
-      result <- I.resolve relativeUrl fullUrl
-      foreignPtr <- newForeignPtr I.p'freeUrl result
       return $ FQU foreignPtr

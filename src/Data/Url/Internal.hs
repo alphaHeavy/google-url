@@ -34,6 +34,7 @@ import Bindings.Url
 import Data.ByteString (ByteString)
 import Data.ByteString.Unsafe (unsafePackMallocCString)
 import qualified Data.List as L
+import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
@@ -139,7 +140,7 @@ getPathForRequest gurl =
 getQuery :: GurlPtr -> IO Query
 getQuery gurl = do
   bs <- getQueryRaw gurl
-  return . Query $! fmap (\ [k,v] -> (k,if T.null v then Nothing else Just v)) $ L.filter (\ x -> L.length x > 1) $ fmap (T.splitOn "=") $ T.splitOn "&" $ T.decodeUtf8 bs
+  return . Query $! M.fromList $ fmap (\ [k,v] -> (k,if T.null v then Nothing else Just v)) $ L.filter (\ x -> L.length x > 1) $ fmap (T.splitOn "=") $ T.splitOn "&" $ T.decodeUtf8 bs
 
 getQueryRaw :: GurlPtr -> IO ByteString
 getQueryRaw gurl =

@@ -1,5 +1,5 @@
 name:                google-url
-version:             0.1
+version:             0.2
 synopsis:            A wrapper for google-url.
 description:         A wrapper for google-url.
 license:             BSD3
@@ -61,6 +61,7 @@ library
     base              >= 3      && < 5,
     bindings-DSL >= 1.0.12,
     bytestring,
+    containers,
     deepseq,
     ghc-prim,
     mtl,
@@ -81,7 +82,8 @@ test-suite alphaheavy-echelon-core-test
     base                       >= 4.5 && < 5,
     google-url,
     tasty,
-    tasty-hunit
+    tasty-hunit,
+    text
 
 source-repository head
   type:     git
