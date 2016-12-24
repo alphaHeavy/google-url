@@ -68,6 +68,8 @@ library
     text
   ghc-options:
     -Wall
+  CC-Options:
+    -O2 -ggdb -std=c++11
 
 test-suite alphaheavy-echelon-core-test
   default-language:
