@@ -68,8 +68,10 @@ library
     text
   ghc-options:
     -Wall
-  CC-Options:
-    -O2 -ggdb -std=c++11
+  if os(linux)
+    CC-Options: -O2 -ggdb -std=c++11
+  if os(darwin)
+    CC-Options: -O2 -ggdb
 
 test-suite alphaheavy-echelon-core-test
   default-language:
