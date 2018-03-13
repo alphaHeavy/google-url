@@ -46,8 +46,17 @@ testParseRelative = testCase "Parse Relative" $ do
       False @=? isValid url
     _ -> assertFailure "Url returned was not a relative url"
 
+testParseResolveUrl :: TestTree
+testParseResolveUrl = testCase "Parse Resolve Url" $ do
+  let url = unsafeParseFullyQualifiedUrl "https://www.cnbc.com/id/105058064?__source=twitter%7Cmain"
+      location = "/2018/03/12/dropbox-sets-valuation-as-high-as-8-billion.html?__source=twitter%7Cmain"
+      finalUrl = parseUrl "https://www.cnbc.com/2018/03/12/dropbox-sets-valuation-as-high-as-8-billion.html?__source=twitter%7Cmain"
+      result = parseResolveUrl url location
+  finalUrl @=? result
+
+
 parseTests :: TestTree
-parseTests = testGroup "Parsing Tests" [testParseRelative]
+parseTests = testGroup "Parsing Tests" [testParseRelative, testParseResolveUrl]
 
 allTests :: TestTree
 allTests = testGroup "Google Url Tests" [typeTests,componentTests,parseTests]

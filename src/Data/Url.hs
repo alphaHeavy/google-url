@@ -32,7 +32,6 @@ import Data.Url.Types
 import Foreign.ForeignPtr
 import System.IO.Unsafe
 
-
 instance HasScheme Url where
   hasScheme (FullyQualifiedUrl _) = True
   hasScheme (InvalidUrl (IU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.hasScheme val
@@ -100,7 +99,9 @@ instance HasPort Url where
 
 instance HasPath Url where
   getPath (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getPath val
+  getPath (RelativeUrl (RU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getPath val
   getPathForRequest (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getPathForRequest val
+  getPathForRequest (RelativeUrl (RU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getPathForRequest val
 
 instance HasHostname Url where
   getHostname (FullyQualifiedUrl (FQU gurl)) = unsafePerformIO $ mask_ $ withForeignPtr gurl $ \ val -> I.getHostname val
@@ -188,7 +189,8 @@ parseUrl str =
           scheme <- I.hasScheme parsed
           Hostname hostname <- I.getHostname parsed
           case (scheme == False) && (T.null hostname) of
-            True -> return $ RelativeUrl $ RU foreignPtr
+            True -> do
+              return $ RelativeUrl $ RU foreignPtr
             False -> return $ InvalidUrl $ IU foreignPtr
         True -> do
           standard <- I.isStandard  parsed
@@ -204,15 +206,14 @@ parseResolveUrl :: FullyQualifiedUrl -> Text -> Url
 parseResolveUrl fqu str =
   let url = parseUrl str
   in case url of
-       RelativeUrl x -> FullyQualifiedUrl $ resolveRelativeUrl fqu x
+       RelativeUrl x -> FullyQualifiedUrl $ resolveRelativeUrl fqu str
        x -> x
 
-resolveRelativeUrl :: FullyQualifiedUrl -> RelativeUrl -> FullyQualifiedUrl
+resolveRelativeUrl :: FullyQualifiedUrl -> Text -> FullyQualifiedUrl
 resolveRelativeUrl (FQU gurl) relativeUrl =
   unsafePerformIO $ mask_ $
     withForeignPtr gurl $ \ fullUrl -> do
-      let txt = toText relativeUrl
-      result <- I.resolve txt fullUrl
+      result <- I.resolve relativeUrl fullUrl
       foreignPtr <- newForeignPtr I.p'freeUrl result
       return $ FQU foreignPtr
 
